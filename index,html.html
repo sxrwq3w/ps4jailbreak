@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جلـــبريــــــك PS4</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .admin-form, .games-container {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        .admin-form input[type="text"],
+        .admin-form input[type="file"],
+        .admin-form input[type="url"],
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .admin-form button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .game {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .game img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .game a {
+            display: inline-block;
+            margin: 5px 0;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>جلــــــبريــــــك PS4</h1>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="ابحث عن لعبة..." onkeyup="searchGames()">
+    </div>
+
+    <div class="admin-form">
+        <h2>الالعاب العربية</h2>
+        <input type="text" id="gameTitle" placeholder="اسم اللعبة" required>
+        <input type="file" id="gameImage" accept="image/*" required>
+        <input type="url" id="gameLink" placeholder="رابط اللعبة" required>
+        <input type="url" id="updateLink" placeholder="رابط التحديث">
+        <input type="url" id="dlcLink" placeholder="رابط الإضافات">
+        <button onclick="addGame()">إضافة اللعبة</button>
+    </div>
+
+    <div class="games-container" id="gamesContainer">
+        
+        <!-- ألعاب ستضاف هنا -->
+    </div>
+
+    <script>
+        let games = JSON.parse(localStorage.getItem('games')) || [];
+
+        function addGame() {
+            const title = document.getElementById("gameTitle").value;
+            const imageFile = document.getElementById("gameImage").files[0];
+            const link = document.getElementById("gameLink").value;
+            const updateLink = document.getElementById("updateLink").value;
+            constdlcLink = document.getElementById("dlcLink").value;
+
+            if (title && imageFile && link) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const game = {
+                        title,
+                        image: e.target.result,
+                        link,
+                        updateLink,
+                        dlcLink
+                    };
+                    games.push(game);
+                    localStorage.setItem('games', JSON.stringify(games));
+                    displayGames();
+                };
+                reader.readAsDataURL(imageFile);
+                resetForm();
+            } else {
+                alert("يرجئ من جميع نشر الموقع في كل مكان.");
+            }
+        }
+
+        function displayGames(filteredGames = games) {
+            const container = document.getElementById("gamesContainer");
+            container.innerHTML = "";
+            filteredGames.forEach((game, index) => {
+                const div = document.createElement("div");
+                div.className = "game";
+                div.innerHTML = `
+                    <h3>${game.title}</h3>
+                    <img src="${game.image}" alt="${game.title}">
+                    <a href="${game.link}" target="_blank">تنزيل اللعبة</a>
+                    <br>
+                    ${game.updateLink ? `<a href="${game.updateLink}" target="_blank">تنزيل التحديث</a>` : ''}
+                    <br>
+                    ${game.dlcLink ? `<a href="${game.dlcLink}" target="_blank">تنزيل الإضافات</a>` : ''}
+                    <br>
+                    <button onclick="removeGame(${index})">إزالة اللعبة</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function searchGames() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const filteredGames = games.filter(game => game.title.toLowerCase().includes(input));
+            displayGames(filteredGames);
+        }
+
+        function removeGame(index) {
+            games.splice(index, 1);
+            localStorage.setItem('games', JSON.stringify(games));
+            displayGames();
+        }
+
+        function resetForm() {
+            document.getElementById("gameTitle").value = "";
+            document.getElementById("gameImage").value = "";
+            document.getElementById("gameLink").value = "";
+            document.getElementById("updateLink").value = "";
+            document.getElementById("dlcLink").value = "";
+        }
+
+        displayGames();
+    </script>
+</body>
+</html>
